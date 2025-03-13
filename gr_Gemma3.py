@@ -3,7 +3,6 @@ from openai import OpenAI
 # when using llamacpp-server, you need to check if the stream chunk is present
 # usually the first and the last chunk are empty and will throw an error
 # https://www.gradio.app/guides/creating-a-custom-chatbot-with-blocks
-
 example = """
 #### Example for Image Generation help
 """
@@ -23,11 +22,10 @@ These are the Google most advanced, portable and responsibly developed open mode
 
 Starting settings: `Temperature=0.45` `Max_Length=1100`
 """
-
+# RUN the llamaCPP server binaries as a subrocess
 import subprocess
 #start cmd.exe /k "llama-server.exe -m google_gemma-3-1b-it-Q8_0.gguf -c 8192 -ngl 999"
 modelname = 'google_gemma-3-1b-it'
-#"""
 NCTX = 8192
 print(f"Starting llamacpp server for {modelname} Context length={NCTX} tokens...")
 mc = ['start',
@@ -42,7 +40,7 @@ mc = ['start',
     '999'   
 ]
 res = subprocess.call(mc,shell=True)
-#"""
+# STARTING THE INTERFACE
 with gr.Blocks(theme=gr.themes.Ocean()) as demo: #gr.themes.Ocean() Citrus() #https://www.gradio.app/guides/theming-guide
     gr.Markdown("# Chat with Gemma 3 1b Instruct 🔷 running Locally with [llama.cpp](https://github.com/ggml-org/llama.cpp)")
     with gr.Row():
@@ -60,10 +58,10 @@ with gr.Blocks(theme=gr.themes.Ocean()) as demo: #gr.themes.Ocean() Citrus() #ht
             msg = gr.Textbox(lines=3,placeholder='Shift+Enter to send your message')
 
             clear = gr.ClearButton([msg, chatbot],variant='primary')
-
+    # Handle the User Messages
     def user(user_message, history: list):
         return "", history + [{"role": "user", "content": user_message}]    
-
+    # HANDLE the inference with the API server
     def respond(chat_history,t,m):
         STOPS = ['<eos>']
         client = OpenAI(base_url="http://localhost:8080/v1", api_key="not-needed", organization='Gemma3')
@@ -76,12 +74,10 @@ with gr.Blocks(theme=gr.themes.Ocean()) as demo: #gr.themes.Ocean() Citrus() #ht
             stop=STOPS)
         chat_history.append({"role": "assistant", "content": ""})
         for chunk in stream:
+            # this is used with llama-server
             if chunk.choices[0].delta.content:
                 chat_history[-1]['content'] += chunk.choices[0].delta.content
-
             yield chat_history
-
-
     msg.submit(user, [msg, chatbot], [msg, chatbot]).then(respond, [chatbot,temperature,maxlen], [chatbot])
-
-demo.launch()
+# LAUNCH THE GRADIO APP with Opening automatically the default browser
+demo.launch(inbrowser=True)
