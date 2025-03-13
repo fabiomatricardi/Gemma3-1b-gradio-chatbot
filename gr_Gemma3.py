@@ -6,19 +6,19 @@ from openai import OpenAI
 
 example = """
 #### Example for Image Generation help
+"""
+mycode ="""
 ```
 I want to create an image with Flux but I need assistance for a good prompt. 
 The image should be about '''[userinput]'''. Comic art style.
 ```
 """
 note = """#### 🔹 Gemma 3 1B Instruct
-> Gemma 3, a collection of lightweight, state-of-the-art open models built from the same research and technology that powers our Gemini 2.0 models. 
+> [Gemma 3](https://ai.google.dev/gemma/docs/core), a collection of lightweight, state-of-the-art open models built from the same research and technology that powers our Gemini 2.0 models. 
 <br>
 
+[Gemma 3](https://developers.googleblog.com/en/introducing-gemma3/) comes in a range of sizes (1B, 4B, 12B and 27B)
 These are the Google most advanced, portable and responsibly developed open models yet. 
-<br>
->They are designed to run fast, directly on devices — from phones and laptops to workstations — helping developers create AI applications, wherever people need them. 
-<br>Gemma 3 comes in a range of sizes (1B, 4B, 12B and 27B), allowing you to choose the best model for your specific hardware and performance needs.
 <br><br>
 
 Starting settings: `Temperature=0.45` `Max_Length=1100`
@@ -43,28 +43,28 @@ mc = ['start',
 ]
 res = subprocess.call(mc,shell=True)
 #"""
-with gr.Blocks(theme=gr.themes.Citrus()) as demo: #gr.themes.Ocean() #https://www.gradio.app/guides/theming-guide
-    gr.Markdown("# Chat with Gemma 3 1b Instruct - running Locally with llama.cpp")
+with gr.Blocks(theme=gr.themes.Ocean()) as demo: #gr.themes.Ocean() Citrus() #https://www.gradio.app/guides/theming-guide
+    gr.Markdown("# Chat with Gemma 3 1b Instruct 🔷 running Locally with [llama.cpp](https://github.com/ggml-org/llama.cpp)")
     with gr.Row():
         with gr.Column(scale=1):
             maxlen = gr.Slider(minimum=250, maximum=4096, value=1100, step=1, label="Max new tokens")
             temperature = gr.Slider(minimum=0.1, maximum=4.0, value=0.45, step=0.1, label="Temperature")          
-            APIKey = gr.Textbox(value="not-needed", 
-                        label="LlamaCPP API key",
-                        type='password',placeholder='Not required',)
             gr.Markdown(note)
+            with gr.Accordion("See suggestions",open=False):
+                gr.Markdown(example)
+                gr.Code(mycode,language='markdown',wrap_lines=True)
         with gr.Column(scale=3):
             chatbot = gr.Chatbot(type="messages",show_copy_button = True,
                     avatar_images=['https://i.ibb.co/m588VrQ6/fabio-Matricardi.png','https://clipartcraft.com/images/transparent-background-google-logo-brand-2.png'],
-                    height=480, layout='panel')
-            msg = gr.Textbox(lines=3)
-            gr.Markdown(example)
-            clear = gr.ClearButton([msg, chatbot])
+                    height=550, layout='bubble')
+            msg = gr.Textbox(lines=3,placeholder='Shift+Enter to send your message')
+
+            clear = gr.ClearButton([msg, chatbot],variant='primary')
 
     def user(user_message, history: list):
         return "", history + [{"role": "user", "content": user_message}]    
 
-    def respond(chat_history, api,t,m):
+    def respond(chat_history,t,m):
         STOPS = ['<eos>']
         client = OpenAI(base_url="http://localhost:8080/v1", api_key="not-needed", organization='Gemma3')
         stream = client.chat.completions.create(     
@@ -82,6 +82,6 @@ with gr.Blocks(theme=gr.themes.Citrus()) as demo: #gr.themes.Ocean() #https://ww
             yield chat_history
 
 
-    msg.submit(user, [msg, chatbot], [msg, chatbot]).then(respond, [chatbot,APIKey,temperature,maxlen], [chatbot])
+    msg.submit(user, [msg, chatbot], [msg, chatbot]).then(respond, [chatbot,temperature,maxlen], [chatbot])
 
 demo.launch()
