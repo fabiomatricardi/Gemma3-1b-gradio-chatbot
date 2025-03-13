@@ -56,7 +56,7 @@ with gr.Blocks(theme=gr.themes.Ocean()) as demo: #gr.themes.Ocean() Citrus() #ht
                     avatar_images=['https://i.ibb.co/m588VrQ6/fabio-Matricardi.png','https://clipartcraft.com/images/transparent-background-google-logo-brand-2.png'],
                     height=550, layout='bubble')
             msg = gr.Textbox(lines=3,placeholder='Shift+Enter to send your message')
-
+            # Button the clear the conversation history
             clear = gr.ClearButton([msg, chatbot],variant='primary')
     # Handle the User Messages
     def user(user_message, history: list):
