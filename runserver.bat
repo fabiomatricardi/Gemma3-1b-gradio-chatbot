@@ -1,0 +1,1 @@
+start cmd.exe /k C:\Users\FabioMatricardi\Documents\DEV\Gemma3\llama-server.exe -m C:\Users\FabioMatricardi\Documents\DEV\Gemma3\google_gemma-3-1b-it-Q8_0.gguf -c 8192 -ngl 0
